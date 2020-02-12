@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using Microsoft.Win32;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
 
 namespace PureNote
 {
@@ -20,17 +13,13 @@ namespace PureNote
         public MainWindow()
         {
             InitializeComponent();
-
             this.PreviewKeyDown += new KeyEventHandler(HandleEsc);
-
-            RichTextBox.ContextMenu = null;
-
+            TextBox.ContextMenu = null;
             Point startPosition = new Point();
             this.PreviewMouseRightButtonDown += (sender, e) =>
             {
                 startPosition = e.GetPosition(this);
             };
-
             this.PreviewMouseMove += (sender, e) =>
             {
                 if (e.RightButton == MouseButtonState.Pressed)
@@ -42,21 +31,47 @@ namespace PureNote
                 }
             };
         }
-
         private void HandleEsc(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
-                WindowDialog();
+                FileExit();
         }
-        private void WindowDialog()
+        
+        private void FileExit()
         {
-            MessageBoxResult msbr = MessageBox.Show("ウインドウを閉じますか？", "PureNote", MessageBoxButton.OKCancel);
-
-            if (msbr == MessageBoxResult.OK)
+            if (TextBox.Text == "")
             {
                 Close();
             }
-
+            else WindowDialog();
+        }
+        private void WindowDialog()
+        {
+            MessageBoxResult msbr = MessageBox.Show("ウインドウを閉じますか？", "PureNote", MessageBoxButton.YesNo);
+            if (msbr == MessageBoxResult.Yes)
+            {
+                Close();
+            }
+        }
+        private void SaveAsCommandHandler(object sender, ExecutedRoutedEventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.AddExtension = true; 
+            sfd.FileName = @"untitled.txt";
+            sfd.Filter = "Text Files(*.txt)|*.txt|All(*.*)|*";
+            if (sfd.ShowDialog() == true)
+            {
+                    File.WriteAllText(sfd.FileName, this.TextBox.Text);
+            }
+        }
+        private void OpenCommandHandler(object sender, ExecutedRoutedEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            if (ofd.ShowDialog() == true)
+            {
+                string content = File.ReadAllText(ofd.FileName);
+                this.TextBox.Text = content;
+            }
         }
     }
 }
